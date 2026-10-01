@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -58,42 +56,46 @@ jobs:
 
       - name: Deploy to Output Branch
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
           mkdir -p /tmp/proxy_output
           cp -f data/clash.yaml /tmp/proxy_output/ 2>/dev/null || true
           cp -f data/v2ray.txt /tmp/proxy_output/ 2>/dev/null || true
-          
-          if git ls-remote --exit-code --heads origin output; then
-            git checkout output
-            git pull origin output
+
+          # 克隆 output 分支到独立目录，若不存在则初始化
+          rm -rf /tmp/output_repo
+          if git clone --depth 1 --branch output "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" /tmp/output_repo 2>/dev/null; then
+            cd /tmp/output_repo
           else
-            git checkout --orphan output
-            git rm -rf .
+            mkdir -p /tmp/output_repo
+            cd /tmp/output_repo
+            git init
+            git checkout -b output
+            git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           fi
-          
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
           cp -f /tmp/proxy_output/* .
-          
+
           echo "# 节点订阅链接 / Subscription Links" > README.md
           echo "" >> README.md
           echo "本分支由 GitHub Actions 自动维护，包含常规版与香港专线特供版两套独立订阅。" >> README.md
           echo "" >> README.md
           echo "### 🌐 常规版（全球低延迟 20 节点混合）：" >> README.md
-          echo "- **Clash 订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
-          echo "- **v2ray 订阅 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
+          echo "- **Clash 常规订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
+          echo "- **v2ray 常规订阅 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
           echo "" >> README.md
           echo "### 🇭🇰 香港专线特供版（保底 >= 5 个香港低延迟优质节点）：" >> README.md
           echo "- **Clash 香港专线**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash_hk.yaml" >> README.md
           echo "- **v2ray 香港专线 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray_hk.txt" >> README.md
           echo "" >> README.md
           echo "最后更新时间 (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')" >> README.md
-          
+
           git add clash.yaml v2ray.txt README.md
-          
+
           if git diff --staged --quiet; then
             echo "No changes in proxy nodes, skip commit."
           else
             git commit -m "Auto update proxies: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-            git push origin output
+            git push -u origin output
           fi
