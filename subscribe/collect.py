@@ -192,6 +192,12 @@ def assign(
     return tasks
 
 
+def is_hk_proxy(p: dict) -> bool:
+    name = str(p.get("name", "")).upper()
+    keywords = ["香港", "HK", "HKG", "HONG KONG", "HONGKONG", "🇭🇰"]
+    return any(k in name for k in keywords)
+
+
 def aggregate(args: argparse.Namespace) -> None:
     def parse_gist_link(link: str) -> tuple[str, str]:
         # 提取 gist 用户名及 id
@@ -241,6 +247,7 @@ def aggregate(args: argparse.Namespace) -> None:
         os.remove(generate_conf)
 
     target_nodes = max(0, getattr(args, "target_nodes", 0))
+    min_hk = max(0, getattr(args, "min_hk", 0))
     max_sites = max(0, getattr(args, "max_sites", 0))
     if max_sites > 0 and len(tasks) > max_sites:
         logger.info(f"limiting candidate tasks from {len(tasks)} to {max_sites}")
@@ -249,7 +256,9 @@ def aggregate(args: argparse.Namespace) -> None:
     nodes, workspace = [], os.path.join(PATH, "clash")
 
     if target_nodes > 0 and not args.skip:
-        logger.info(f"fast collection enabled: target {target_nodes} low-delay proxies (max delay: {args.delay}ms)")
+        logger.info(
+            f"fast collection enabled: target {target_nodes} low-delay proxies (max delay: {args.delay}ms, min HK: {min_hk})"
+        )
         batch_size = 10
         all_proxies = []
         tested_nodes = []
@@ -259,7 +268,9 @@ def aggregate(args: argparse.Namespace) -> None:
 
         for i in range(0, len(tasks), batch_size):
             batch_tasks = tasks[i : i + batch_size]
-            logger.info(f"[Batch {i // batch_size + 1}/{(len(tasks) + batch_size - 1) // batch_size}] processing {len(batch_tasks)} airport tasks...")
+            logger.info(
+                f"[Batch {i // batch_size + 1}/{(len(tasks) + batch_size - 1) // batch_size}] processing {len(batch_tasks)} airport tasks..."
+            )
             batch_results = pipeline.execute_tasks(batch_tasks)
             batch_proxies = list(itertools.chain.from_iterable([x[1] for x in batch_results if x]))
             if not batch_proxies:
@@ -299,10 +310,15 @@ def aggregate(args: argparse.Namespace) -> None:
 
             valid_batch = [gen_proxies[j] for j in range(len(gen_proxies)) if masks[j]]
             tested_nodes.extend(valid_batch)
-            logger.info(f"[FastCollect] Current valid low-delay proxies: {len(tested_nodes)} / {target_nodes}")
+            hk_count = sum(1 for n in tested_nodes if is_hk_proxy(n))
+            logger.info(
+                f"[FastCollect] Current valid proxies: {len(tested_nodes)} / {target_nodes}, HK proxies: {hk_count} / {min_hk}"
+            )
 
-            if len(tested_nodes) >= target_nodes:
-                logger.info(f"Target count reached ({len(tested_nodes)} >= {target_nodes})! Stopping subsequent tasks early.")
+            if len(tested_nodes) >= target_nodes and (min_hk == 0 or hk_count >= min_hk):
+                logger.info(
+                    f"Target count reached (Total: {len(tested_nodes)} >= {target_nodes}, HK: {hk_count} >= {min_hk})! Stopping early."
+                )
                 break
 
         if len(tested_nodes) <= 0:
@@ -311,7 +327,23 @@ def aggregate(args: argparse.Namespace) -> None:
 
         # 按实测延迟从小到大排序
         tested_nodes.sort(key=lambda x: x.get("delay", 999999))
-        nodes = tested_nodes[:target_nodes]
+
+        if min_hk > 0:
+            hk_nodes = [n for n in tested_nodes if is_hk_proxy(n)]
+            other_nodes = [n for n in tested_nodes if not is_hk_proxy(n)]
+            # 优先保底选出 min_hk 个香港节点
+            selected_hk = hk_nodes[:max(min_hk, len(hk_nodes))]
+            remaining_slots = max(0, target_nodes - len(selected_hk))
+            selected_others = other_nodes[:remaining_slots]
+            final_selected = selected_hk + selected_others
+            final_selected.sort(key=lambda x: x.get("delay", 999999))
+            nodes = final_selected[:target_nodes]
+            logger.info(
+                f"[HK Guard] Final selected {len(nodes)} proxies, including {sum(1 for n in nodes if is_hk_proxy(n))} HK proxies."
+            )
+        else:
+            nodes = tested_nodes[:target_nodes]
+
         proxies = all_proxies
     else:
         results = pipeline.execute_tasks(tasks)
@@ -613,6 +645,15 @@ if __name__ == "__main__":
         required=False,
         default=0,
         help="maximum number of candidate sites to attempt registering (0 for all)",
+    )
+
+    parser.add_argument(
+        "--min-hk",
+        dest="min_hk",
+        type=int,
+        required=False,
+        default=0,
+        help="minimum number of low-delay Hong Kong proxies required (0 for no restriction)",
     )
 
     parser.add_argument(

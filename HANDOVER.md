@@ -86,10 +86,15 @@ Set-Location D:\ai\proxy
 
 ## ☁️ 6. GitHub Actions 远端云端运行指南
 
-本项目已配置专属 GitHub Actions 工作流：[auto_refresh.yml](file:///.github/workflows/auto_refresh.yml)
+本项目配置了两个互补的独立 GitHub Actions 工作流：
+
+| 工作流名称 | 配置文件 | 说明 |
+| :--- | :--- | :--- |
+| **Auto Collect and Refresh Proxies** | `.github/workflows/auto_refresh.yml` | **常规版**：按需提取 20 个全球低延迟节点 |
+| **Auto Collect and Refresh Proxies 2 - HK Special** | `.github/workflows/auto_refresh_hk.yml` | **香港专线特供版**：测活并**确保包含至少 5 个低延迟香港优质节点** |
 
 ### 触发方式
-* **纯按需手动触发**：打开 GitHub 仓库页面 $\to$ 点击 **Actions** 标签 $\to$ 选择 **Auto Collect & Refresh Proxies** $\to$ 点击 **Run workflow** 按钮即可。
+* **纯按需手动触发**：打开 GitHub 仓库页面 $\to$ 点击 **Actions** 标签 $\to$ 选择想要的工作流 $\to$ 点击 **Run workflow** 按钮即可。
 
 ### 永久订阅直连地址（自动发布在 output 分支）
 * **Clash 订阅**：
