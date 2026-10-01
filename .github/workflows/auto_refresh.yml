@@ -1,8 +1,7 @@
-name: Auto Collect & Refresh Proxies
+name: "Auto Collect and Refresh Proxies"
 
 on:
-  workflow_dispatch:
-    # 纯按需手动点击触发
+  workflow_dispatch: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,13 +36,12 @@ jobs:
           chmod +x clash/clash-linux-amd
           chmod +x subconverter/subconverter-linux-amd
 
-      - name: Run Fast Collect & Refresh
+      - name: Run Fast Collect and Refresh
         run: |
           python -u subscribe/collect.py -r -t clash singbox mixed -m 20 -d 2000
 
       - name: Generate Standard Base64 v2ray.txt
         run: |
-          # 将包含全部现代协议的 mixed.txt 转换为通用标准的 base64 订阅文本
           if [ -f data/mixed.txt ]; then
             base64 -w 0 data/mixed.txt > data/v2ray.txt
           fi
@@ -64,14 +62,12 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 创建临时工作目录保存结果
           mkdir -p /tmp/proxy_output
           cp -f data/clash.yaml /tmp/proxy_output/ 2>/dev/null || true
           cp -f data/v2ray.txt /tmp/proxy_output/ 2>/dev/null || true
           cp -f data/mixed.txt /tmp/proxy_output/ 2>/dev/null || true
           cp -f data/singbox.json /tmp/proxy_output/ 2>/dev/null || true
           
-          # 切换或创建孤立的 output 分支
           if git ls-remote --exit-code --heads origin output; then
             git checkout output
             git pull origin output
@@ -80,31 +76,22 @@ jobs:
             git rm -rf .
           fi
           
-          # 拷贝生成的新文件
           cp -f /tmp/proxy_output/* .
           
-          # 生成友好的 README 包含直连订阅地址
-          cat << 'EOF' > README.md
-# 节点订阅链接 / Subscription Links
-
-> 本分支由 GitHub Actions 自动更新维护，包含实测低延迟可用节点。
-
-### 常用客户端订阅地址：
-- **Clash 订阅 (Clash Verge / Nyanpasu)**:
-  `https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml`
-- **v2ray 订阅 (v2rayN / v2rayNG / NekoBox / 小火箭)**:
-  `https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt`
-- **Sing-Box 订阅**:
-  `https://raw.githubusercontent.com/${{ github.repository }}/output/singbox.json`
-- **明文多协议节点列表**:
-  `https://raw.githubusercontent.com/${{ github.repository }}/output/mixed.txt`
-
-EOF
+          echo "# 节点订阅链接 / Subscription Links" > README.md
+          echo "" >> README.md
+          echo "本分支由 GitHub Actions 自动维护，包含实测低延迟可用节点。" >> README.md
+          echo "" >> README.md
+          echo "### 常用客户端订阅地址：" >> README.md
+          echo "- **Clash 订阅 (Clash Verge / Nyanpasu)**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
+          echo "- **v2ray 订阅 (v2rayN / v2rayNG / NekoBox / 小火箭)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
+          echo "- **Sing-Box 订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox.json" >> README.md
+          echo "- **明文多协议节点列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed.txt" >> README.md
+          echo "" >> README.md
           echo "最后更新时间 (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')" >> README.md
           
           git add clash.yaml v2ray.txt mixed.txt singbox.json README.md
           
-          # 如果有变更才提交推送
           if git diff --staged --quiet; then
             echo "No changes in proxy nodes, skip commit."
           else
