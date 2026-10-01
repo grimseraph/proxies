@@ -65,22 +65,18 @@ Set-Location D:\ai\proxy
 
 ## 📂 5. 产物输出与客户端使用指南
 
-所有生成文件存放在 **`D:\ai\proxy\data\`**：
+所有生成文件存放在 **`D:\ai\proxy\data\`**（仅保留 Clash 与 v2ray 两大主流格式）：
 
 ### 1. [data/clash.yaml](file:///d:/ai/proxy/data/clash.yaml)（Clash 完整配置）
 * **适用客户端**：Clash Verge, Clash Nyanpasu, Clash Meta, Clash for Windows
-* **使用方式**：直接把该 yaml 文件拖入客户端配置列表，或者新建本地 Profile 导入即可。包含完整的代理分组、自动测速选优策略组及分流规则。
+* **使用方式**：直接把该 yaml 文件拖入客户端配置列表导入。包含完整的代理分组、自动测速选优策略组及分流规则。
 
-### 2. [data/mixed.txt](file:///d:/ai/proxy/data/mixed.txt)（通用多协议节点列表）
-* **适用客户端**：v2rayN, NekoBox, v2rayNG, Shadowrocket (小火箭), Quantumult X
-* **使用方式**：打开文本全选复制，在客户端界面点击 **“从剪贴板导入”** 即可批量导入全部节点。支持 `vless://`, `hysteria2://`, `vmess://` 等通用协议。
+### 2. [data/v2ray.txt](file:///d:/ai/proxy/data/v2ray.txt)（v2ray 通用 Base64 订阅文本）
+* **适用客户端**：v2rayN, NekoBox, v2rayNG (安卓), Shadowrocket (小火箭), Quantumult X
+* **使用方式**：标准 Base64 格式，客户端可直接添加为远程订阅，或复制文件内容点击“从剪贴板导入”。包含 VLESS、Hysteria2、VMess 等全部可用现代协议。
 
-### 3. [data/singbox.json](file:///d:/ai/proxy/data/singbox.json)（Sing-Box 完整配置）
-* **适用客户端**：Sing-Box 各平台客户端
-* **使用方式**：直接作为配置文件加载，20 个现代协议节点全部完整支持。
-
-### 4. [data/subscribes.txt](file:///d:/ai/proxy/data/subscribes.txt)（订阅源列表）
-* 维护用于 `-r` 极速测活的高质量公共订阅源列表。如果今后您有了自己的私人订阅，也可以按行追加在此文件中。
+### 3. [data/subscribes.txt](file:///d:/ai/proxy/data/subscribes.txt)（订阅源列表）
+* 维护用于 `-r` 极速测活的高质量公共订阅源列表。可随时按行追加您自己的订阅源。
 
 ---
 
@@ -103,17 +99,9 @@ Set-Location D:\ai\proxy
   `https://raw.githubusercontent.com/grimseraph/proxies/output/clash_hk.yaml`
 * **v2ray 香港专线 (Base64)**：
   `https://raw.githubusercontent.com/grimseraph/proxies/output/v2ray_hk.txt`
-* **Sing-Box 香港专线**：
-  `https://raw.githubusercontent.com/grimseraph/proxies/output/singbox_hk.json`
-* **明文香港专线列表**：
-  `https://raw.githubusercontent.com/grimseraph/proxies/output/mixed_hk.txt`
 
 #### 🌐 常规版（全球低延迟 20 节点混合）：
 * **Clash 常规订阅**：
   `https://raw.githubusercontent.com/grimseraph/proxies/output/clash.yaml`
 * **v2ray 常规订阅 (Base64)**：
   `https://raw.githubusercontent.com/grimseraph/proxies/output/v2ray.txt`
-* **Sing-Box 常规订阅**：
-  `https://raw.githubusercontent.com/grimseraph/proxies/output/singbox.json`
-* **明文常规节点列表**：
-  `https://raw.githubusercontent.com/grimseraph/proxies/output/mixed.txt`

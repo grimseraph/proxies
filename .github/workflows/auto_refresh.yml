@@ -38,12 +38,13 @@ jobs:
 
       - name: Run Fast Collect and Refresh
         run: |
-          python -u subscribe/collect.py -r -t clash singbox mixed -m 20 -d 2000
+          python -u subscribe/collect.py -r -t clash mixed -m 20 -d 2000
 
       - name: Generate Standard Base64 v2ray.txt
         run: |
           if [ -f data/mixed.txt ]; then
             base64 -w 0 data/mixed.txt > data/v2ray.txt
+            rm -f data/mixed.txt
           fi
 
       - name: Upload Artifacts
@@ -53,8 +54,6 @@ jobs:
           path: |
             data/clash.yaml
             data/v2ray.txt
-            data/mixed.txt
-            data/singbox.json
           retention-days: 30
 
       - name: Deploy to Output Branch
@@ -65,8 +64,6 @@ jobs:
           mkdir -p /tmp/proxy_output
           cp -f data/clash.yaml /tmp/proxy_output/ 2>/dev/null || true
           cp -f data/v2ray.txt /tmp/proxy_output/ 2>/dev/null || true
-          cp -f data/mixed.txt /tmp/proxy_output/ 2>/dev/null || true
-          cp -f data/singbox.json /tmp/proxy_output/ 2>/dev/null || true
           
           if git ls-remote --exit-code --heads origin output; then
             git checkout output
@@ -83,20 +80,16 @@ jobs:
           echo "本分支由 GitHub Actions 自动维护，包含常规版与香港专线特供版两套独立订阅。" >> README.md
           echo "" >> README.md
           echo "### 🌐 常规版（全球低延迟 20 节点混合）：" >> README.md
-          echo "- **Clash 常规订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
-          echo "- **v2ray 常规订阅 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
-          echo "- **Sing-Box 常规订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox.json" >> README.md
-          echo "- **明文常规节点列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed.txt" >> README.md
+          echo "- **Clash 订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
+          echo "- **v2ray 订阅 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
           echo "" >> README.md
-          echo "### 🇭🇰 香港专线特供版（保底 >= 5 个香港低延迟节点）：" >> README.md
+          echo "### 🇭🇰 香港专线特供版（保底 >= 5 个香港低延迟优质节点）：" >> README.md
           echo "- **Clash 香港专线**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash_hk.yaml" >> README.md
           echo "- **v2ray 香港专线 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray_hk.txt" >> README.md
-          echo "- **Sing-Box 香港专线**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox_hk.json" >> README.md
-          echo "- **明文香港专线列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed_hk.txt" >> README.md
           echo "" >> README.md
           echo "最后更新时间 (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')" >> README.md
           
-          git add clash.yaml v2ray.txt mixed.txt singbox.json README.md
+          git add clash.yaml v2ray.txt README.md
           
           if git diff --staged --quiet; then
             echo "No changes in proxy nodes, skip commit."
