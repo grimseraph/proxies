@@ -43,8 +43,7 @@ jobs:
           cp -f data/clash.yaml data/clash_hk.yaml 2>/dev/null || true
           
           if [ -f data/mixed.txt ]; then
-            base64 -w 0 data/mixed.txt > data/v2ray_hk.txt
-            rm -f data/mixed.txt
+            mv -f data/mixed.txt data/v2ray_hk.txt
           fi
 
       - name: Upload Artifacts

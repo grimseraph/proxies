@@ -10,7 +10,9 @@ call .venv\Scripts\activate.bat
 
 python subscribe/collect.py -r -t clash mixed -m 20 -d 2000 %*
 
-powershell -Command "if (Test-Path 'data\mixed.txt') { [Convert]::ToBase64String([IO.File]::ReadAllBytes('data\mixed.txt')) | Out-File -Encoding ascii 'data\v2ray.txt'; Remove-Item 'data\mixed.txt' -Force }" >nul 2>&1
+if exist data\mixed.txt (
+    move /y data\mixed.txt data\v2ray.txt >nul
+)
 
 echo.
 echo ==============================================================

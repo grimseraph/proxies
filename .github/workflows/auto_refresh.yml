@@ -41,8 +41,7 @@ jobs:
       - name: Generate Standard Base64 v2ray.txt
         run: |
           if [ -f data/mixed.txt ]; then
-            base64 -w 0 data/mixed.txt > data/v2ray.txt
-            rm -f data/mixed.txt
+            mv -f data/mixed.txt data/v2ray.txt
           fi
 
       - name: Upload Artifacts
