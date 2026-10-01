@@ -40,10 +40,16 @@ jobs:
         run: |
           python -u subscribe/collect.py -r -t clash singbox mixed -m 20 -d 2000 --min-hk 5
 
-      - name: Generate Standard Base64 v2ray.txt
+      - name: Prepare HK Dedicated Files
         run: |
-          if [ -f data/mixed.txt ]; then
-            base64 -w 0 data/mixed.txt > data/v2ray.txt
+          # 独立命名为带 _hk 的专线文件
+          cp -f data/clash.yaml data/clash_hk.yaml 2>/dev/null || true
+          cp -f data/singbox.json data/singbox_hk.json 2>/dev/null || true
+          cp -f data/mixed.txt data/mixed_hk.txt 2>/dev/null || true
+          
+          # 生成 Base64 香港专线订阅
+          if [ -f data/mixed_hk.txt ]; then
+            base64 -w 0 data/mixed_hk.txt > data/v2ray_hk.txt
           fi
 
       - name: Upload Artifacts
@@ -51,22 +57,22 @@ jobs:
         with:
           name: proxies-config-hk
           path: |
-            data/clash.yaml
-            data/v2ray.txt
-            data/mixed.txt
-            data/singbox.json
+            data/clash_hk.yaml
+            data/v2ray_hk.txt
+            data/mixed_hk.txt
+            data/singbox_hk.json
           retention-days: 30
 
-      - name: Deploy to Output Branch
+      - name: Deploy HK Files to Output Branch
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          mkdir -p /tmp/proxy_output
-          cp -f data/clash.yaml /tmp/proxy_output/ 2>/dev/null || true
-          cp -f data/v2ray.txt /tmp/proxy_output/ 2>/dev/null || true
-          cp -f data/mixed.txt /tmp/proxy_output/ 2>/dev/null || true
-          cp -f data/singbox.json /tmp/proxy_output/ 2>/dev/null || true
+          mkdir -p /tmp/proxy_output_hk
+          cp -f data/clash_hk.yaml /tmp/proxy_output_hk/ 2>/dev/null || true
+          cp -f data/v2ray_hk.txt /tmp/proxy_output_hk/ 2>/dev/null || true
+          cp -f data/mixed_hk.txt /tmp/proxy_output_hk/ 2>/dev/null || true
+          cp -f data/singbox_hk.json /tmp/proxy_output_hk/ 2>/dev/null || true
           
           if git ls-remote --exit-code --heads origin output; then
             git checkout output
@@ -76,25 +82,32 @@ jobs:
             git rm -rf .
           fi
           
-          cp -f /tmp/proxy_output/* .
+          # 只增量覆盖 _hk 相关专线文件，不影响常规版文件
+          cp -f /tmp/proxy_output_hk/* .
           
           echo "# 节点订阅链接 / Subscription Links" > README.md
           echo "" >> README.md
-          echo "本分支由 GitHub Actions 自动维护，包含实测低延迟可用节点（含至少 5 个香港低延迟优质节点）。" >> README.md
+          echo "本分支由 GitHub Actions 自动维护，包含常规版与香港专线特供版两套独立订阅。" >> README.md
           echo "" >> README.md
-          echo "### 常用客户端订阅地址：" >> README.md
-          echo "- **Clash 订阅 (Clash Verge / Nyanpasu)**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
-          echo "- **v2ray 订阅 (v2rayN / v2rayNG / NekoBox / 小火箭)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
-          echo "- **Sing-Box 订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox.json" >> README.md
-          echo "- **明文多协议节点列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed.txt" >> README.md
+          echo "### 🇭🇰 香港专线特供版（保底 >= 5 个香港低延迟节点）：" >> README.md
+          echo "- **Clash 香港专线**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash_hk.yaml" >> README.md
+          echo "- **v2ray 香港专线 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray_hk.txt" >> README.md
+          echo "- **Sing-Box 香港专线**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox_hk.json" >> README.md
+          echo "- **明文香港专线列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed_hk.txt" >> README.md
+          echo "" >> README.md
+          echo "### 🌐 常规版（全球低延迟 20 节点混合）：" >> README.md
+          echo "- **Clash 常规订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
+          echo "- **v2ray 常规订阅 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
+          echo "- **Sing-Box 常规订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox.json" >> README.md
+          echo "- **明文常规节点列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed.txt" >> README.md
           echo "" >> README.md
           echo "最后更新时间 (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')" >> README.md
           
-          git add clash.yaml v2ray.txt mixed.txt singbox.json README.md
+          git add clash_hk.yaml v2ray_hk.txt mixed_hk.txt singbox_hk.json README.md
           
           if git diff --staged --quiet; then
-            echo "No changes in proxy nodes, skip commit."
+            echo "No changes in HK proxy nodes, skip commit."
           else
-            git commit -m "Auto update proxies (HK Special): $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            git commit -m "Auto update HK proxies: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
             git push origin output
           fi

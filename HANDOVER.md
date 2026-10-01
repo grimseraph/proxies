@@ -96,12 +96,24 @@ Set-Location D:\ai\proxy
 ### 触发方式
 * **纯按需手动触发**：打开 GitHub 仓库页面 $\to$ 点击 **Actions** 标签 $\to$ 选择想要的工作流 $\to$ 点击 **Run workflow** 按钮即可。
 
-### 永久订阅直连地址（自动发布在 output 分支）
-* **Clash 订阅**：
+### 永久订阅直连地址（自动发布在 output 分支，两套独立共存）
+
+#### 🇭🇰 香港专线特供版（保底 >= 5 个香港低延迟优质节点）：
+* **Clash 香港专线**：
+  `https://raw.githubusercontent.com/grimseraph/proxies/output/clash_hk.yaml`
+* **v2ray 香港专线 (Base64)**：
+  `https://raw.githubusercontent.com/grimseraph/proxies/output/v2ray_hk.txt`
+* **Sing-Box 香港专线**：
+  `https://raw.githubusercontent.com/grimseraph/proxies/output/singbox_hk.json`
+* **明文香港专线列表**：
+  `https://raw.githubusercontent.com/grimseraph/proxies/output/mixed_hk.txt`
+
+#### 🌐 常规版（全球低延迟 20 节点混合）：
+* **Clash 常规订阅**：
   `https://raw.githubusercontent.com/grimseraph/proxies/output/clash.yaml`
-* **v2ray 订阅（通用 Base64 格式，支持 v2rayN / v2rayNG / NekoBox / 小火箭）**：
+* **v2ray 常规订阅 (Base64)**：
   `https://raw.githubusercontent.com/grimseraph/proxies/output/v2ray.txt`
-* **Sing-Box 订阅**：
+* **Sing-Box 常规订阅**：
   `https://raw.githubusercontent.com/grimseraph/proxies/output/singbox.json`
-* **明文多协议节点链接**：
+* **明文常规节点列表**：
   `https://raw.githubusercontent.com/grimseraph/proxies/output/mixed.txt`

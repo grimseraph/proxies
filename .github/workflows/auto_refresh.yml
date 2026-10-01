@@ -80,13 +80,19 @@ jobs:
           
           echo "# 节点订阅链接 / Subscription Links" > README.md
           echo "" >> README.md
-          echo "本分支由 GitHub Actions 自动维护，包含实测低延迟可用节点。" >> README.md
+          echo "本分支由 GitHub Actions 自动维护，包含常规版与香港专线特供版两套独立订阅。" >> README.md
           echo "" >> README.md
-          echo "### 常用客户端订阅地址：" >> README.md
-          echo "- **Clash 订阅 (Clash Verge / Nyanpasu)**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
-          echo "- **v2ray 订阅 (v2rayN / v2rayNG / NekoBox / 小火箭)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
-          echo "- **Sing-Box 订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox.json" >> README.md
-          echo "- **明文多协议节点列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed.txt" >> README.md
+          echo "### 🌐 常规版（全球低延迟 20 节点混合）：" >> README.md
+          echo "- **Clash 常规订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash.yaml" >> README.md
+          echo "- **v2ray 常规订阅 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray.txt" >> README.md
+          echo "- **Sing-Box 常规订阅**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox.json" >> README.md
+          echo "- **明文常规节点列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed.txt" >> README.md
+          echo "" >> README.md
+          echo "### 🇭🇰 香港专线特供版（保底 >= 5 个香港低延迟节点）：" >> README.md
+          echo "- **Clash 香港专线**: https://raw.githubusercontent.com/${{ github.repository }}/output/clash_hk.yaml" >> README.md
+          echo "- **v2ray 香港专线 (Base64)**: https://raw.githubusercontent.com/${{ github.repository }}/output/v2ray_hk.txt" >> README.md
+          echo "- **Sing-Box 香港专线**: https://raw.githubusercontent.com/${{ github.repository }}/output/singbox_hk.json" >> README.md
+          echo "- **明文香港专线列表**: https://raw.githubusercontent.com/${{ github.repository }}/output/mixed_hk.txt" >> README.md
           echo "" >> README.md
           echo "最后更新时间 (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')" >> README.md
           
