@@ -1,11 +1,13 @@
 # 节点订阅链接 / Subscription Links
 
-本分支由 GitHub Actions 自动维护，包含实测低延迟可用节点。
+本分支由 GitHub Actions 自动维护，包含常规版与香港专线特供版两套独立订阅。
 
-### 常用客户端订阅地址：
-- **Clash 订阅 (Clash Verge / Nyanpasu)**: https://raw.githubusercontent.com/grimseraph/proxies/output/clash.yaml
-- **v2ray 订阅 (v2rayN / v2rayNG / NekoBox / 小火箭)**: https://raw.githubusercontent.com/grimseraph/proxies/output/v2ray.txt
-- **Sing-Box 订阅**: https://raw.githubusercontent.com/grimseraph/proxies/output/singbox.json
-- **明文多协议节点列表**: https://raw.githubusercontent.com/grimseraph/proxies/output/mixed.txt
+### 🇭🇰 香港专线特供版（保底 >= 5 个香港低延迟节点）：
+- **Clash 香港专线**: https://raw.githubusercontent.com/grimseraph/proxies/output/clash_hk.yaml
+- **v2ray 香港专线 (Base64)**: https://raw.githubusercontent.com/grimseraph/proxies/output/v2ray_hk.txt
 
-最后更新时间 (UTC): 2026-10-01 07:50:32
+### 🌐 常规版（全球低延迟 20 节点混合）：
+- **Clash 常规订阅**: https://raw.githubusercontent.com/grimseraph/proxies/output/clash.yaml
+- **v2ray 常规订阅 (Base64)**: https://raw.githubusercontent.com/grimseraph/proxies/output/v2ray.txt
+
+最后更新时间 (UTC): 2026-10-01 14:20:39
