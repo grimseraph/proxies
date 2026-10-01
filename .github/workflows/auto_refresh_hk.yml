@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Fast Collect with HK Guard (Min 5 HK nodes)
         run: |
-          python -u subscribe/collect.py -r -t clash mixed -m 20 -d 2000 --min-hk 5
+          python -u subscribe/collect.py -r -t clash mixed -m 20 -d 3500 --min-hk 5
 
       - name: Prepare HK Dedicated Files
         run: |
