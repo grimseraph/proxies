@@ -275,7 +275,7 @@ def aggregate(args: argparse.Namespace) -> None:
             batch_proxies = [
                 p
                 for p in itertools.chain.from_iterable([x[1] for x in batch_results if x])
-                if str(p.get("type", "")).lower() != "anytls"
+                if str(p.get("type", "")).lower() in {"vmess", "vless", "ss", "ssr", "trojan", "hysteria", "hysteria2"}
             ]
             if not batch_proxies:
                 continue
@@ -284,8 +284,12 @@ def aggregate(args: argparse.Namespace) -> None:
 
             confif_file = f"config_batch_{i}.yaml"
             gen_proxies = clash.generate_config(workspace, list(batch_proxies), confif_file)
+            if min_hk > 0:
+                gen_proxies.sort(key=lambda p: (0 if is_hk_proxy(p) else 1))
+            total_hk_available = sum(1 for p in gen_proxies if is_hk_proxy(p))
+            target_hk = min(min_hk, total_hk_available)
 
-            logger.info(f"startup clash to check batch {i // batch_size + 1}, proxies: {len(gen_proxies)}")
+            logger.info(f"startup clash to check batch {i // batch_size + 1}, proxies: {len(gen_proxies)} (HK available: {total_hk_available}, HK target: {target_hk})")
             process = subprocess.Popen(
                 [
                     binpath,
@@ -314,11 +318,12 @@ def aggregate(args: argparse.Namespace) -> None:
                 tested_nodes.extend(valid_sub)
                 hk_count = sum(1 for n in tested_nodes if is_hk_proxy(n))
                 logger.info(
-                    f"[FastCollect] Current valid proxies: {len(tested_nodes)} / {target_nodes}, HK proxies: {hk_count} / {min_hk}"
+                    f"[FastCollect] Current valid proxies: {len(tested_nodes)} / {target_nodes}, HK proxies: {hk_count} / {target_hk}"
                 )
-                if len(tested_nodes) >= target_nodes and (min_hk == 0 or hk_count >= min_hk):
+                hk_finished = (min_hk == 0) or (hk_count >= min_hk) or (k >= total_hk_available)
+                if len(tested_nodes) >= target_nodes and hk_finished:
                     logger.info(
-                        f"Target count reached (Total: {len(tested_nodes)} >= {target_nodes}, HK: {hk_count} >= {min_hk})! Stopping early."
+                        f"Target count reached (Total: {len(tested_nodes)} >= {target_nodes}, HK: {hk_count} / {min_hk})! Stopping early."
                     )
                     break
 
@@ -327,7 +332,7 @@ def aggregate(args: argparse.Namespace) -> None:
             except:
                 pass
 
-            if len(tested_nodes) >= target_nodes and (min_hk == 0 or hk_count >= min_hk):
+            if len(tested_nodes) >= target_nodes and hk_finished:
                 break
 
         if len(tested_nodes) <= 0:
@@ -359,7 +364,7 @@ def aggregate(args: argparse.Namespace) -> None:
         proxies = [
             p
             for p in itertools.chain.from_iterable([x[1] for x in results if x])
-            if str(p.get("type", "")).lower() != "anytls"
+            if str(p.get("type", "")).lower() in {"vmess", "vless", "ss", "ssr", "trojan", "hysteria", "hysteria2"}
         ]
 
         if len(proxies) == 0:
