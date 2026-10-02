@@ -272,7 +272,11 @@ def aggregate(args: argparse.Namespace) -> None:
                 f"[Batch {i // batch_size + 1}/{(len(tasks) + batch_size - 1) // batch_size}] processing {len(batch_tasks)} airport tasks..."
             )
             batch_results = pipeline.execute_tasks(batch_tasks)
-            batch_proxies = list(itertools.chain.from_iterable([x[1] for x in batch_results if x]))
+            batch_proxies = [
+                p
+                for p in itertools.chain.from_iterable([x[1] for x in batch_results if x])
+                if str(p.get("type", "")).lower() != "anytls"
+            ]
             if not batch_proxies:
                 continue
 
@@ -292,33 +296,38 @@ def aggregate(args: argparse.Namespace) -> None:
                 ]
             )
             time.sleep(random.randint(3, 5))
-            params = [
-                [p, clash.EXTERNAL_CONTROLLER, 5000, args.url, args.delay, False]
-                for p in gen_proxies
-                if isinstance(p, dict)
-            ]
-            masks = utils.multi_thread_run(
-                func=clash.check,
-                tasks=params,
-                num_threads=args.num,
-                show_progress=display,
-            )
+            sub_chunk_size = max(50, target_nodes * 2)
+            for k in range(0, len(gen_proxies), sub_chunk_size):
+                sub_proxies = gen_proxies[k : k + sub_chunk_size]
+                sub_params = [
+                    [p, clash.EXTERNAL_CONTROLLER, 5000, args.url, args.delay, False]
+                    for p in sub_proxies
+                    if isinstance(p, dict)
+                ]
+                sub_masks = utils.multi_thread_run(
+                    func=clash.check,
+                    tasks=sub_params,
+                    num_threads=args.num,
+                    show_progress=display,
+                )
+                valid_sub = [sub_proxies[j] for j in range(len(sub_proxies)) if sub_masks[j]]
+                tested_nodes.extend(valid_sub)
+                hk_count = sum(1 for n in tested_nodes if is_hk_proxy(n))
+                logger.info(
+                    f"[FastCollect] Current valid proxies: {len(tested_nodes)} / {target_nodes}, HK proxies: {hk_count} / {min_hk}"
+                )
+                if len(tested_nodes) >= target_nodes and (min_hk == 0 or hk_count >= min_hk):
+                    logger.info(
+                        f"Target count reached (Total: {len(tested_nodes)} >= {target_nodes}, HK: {hk_count} >= {min_hk})! Stopping early."
+                    )
+                    break
+
             try:
                 process.terminate()
             except:
                 pass
 
-            valid_batch = [gen_proxies[j] for j in range(len(gen_proxies)) if masks[j]]
-            tested_nodes.extend(valid_batch)
-            hk_count = sum(1 for n in tested_nodes if is_hk_proxy(n))
-            logger.info(
-                f"[FastCollect] Current valid proxies: {len(tested_nodes)} / {target_nodes}, HK proxies: {hk_count} / {min_hk}"
-            )
-
             if len(tested_nodes) >= target_nodes and (min_hk == 0 or hk_count >= min_hk):
-                logger.info(
-                    f"Target count reached (Total: {len(tested_nodes)} >= {target_nodes}, HK: {hk_count} >= {min_hk})! Stopping early."
-                )
                 break
 
         if len(tested_nodes) <= 0:
@@ -347,7 +356,11 @@ def aggregate(args: argparse.Namespace) -> None:
         proxies = all_proxies
     else:
         results = pipeline.execute_tasks(tasks)
-        proxies = list(itertools.chain.from_iterable([x[1] for x in results if x]))
+        proxies = [
+            p
+            for p in itertools.chain.from_iterable([x[1] for x in results if x])
+            if str(p.get("type", "")).lower() != "anytls"
+        ]
 
         if len(proxies) == 0:
             logger.error("exit because cannot fetch any proxy node")
