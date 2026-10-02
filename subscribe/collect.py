@@ -452,7 +452,7 @@ def aggregate(args: argparse.Namespace) -> None:
         convert_name = f'convert_{target.replace("&", "_").replace("=", "_")}'
 
         filename = subconverter.get_filename(target=target)
-        list_only = False if target == "v2ray" or target == "mixed" or "ss" in target else not args.all
+        list_only = False if target in ["v2ray", "mixed", "ss", "clash"] else not args.all
         targets.append((convert_name, filename, target, list_only, args.ignore_default_filters))
 
     for t in targets:
