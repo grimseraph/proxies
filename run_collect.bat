@@ -20,4 +20,12 @@ echo  Finished! Files saved:
 echo  - Clash: data\clash.yaml
 echo  - v2ray: data\v2ray.txt (Base64)
 echo ==============================================================
+echo.
+set /p sync="Do you want to sync these nodes to GitHub subscription? (Y/N, default: N): "
+if /i "%sync%"=="y" (
+    echo.
+    python scripts\sync_output.py
+)
+
+echo.
 pause
